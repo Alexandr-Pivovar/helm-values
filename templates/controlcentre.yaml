@@ -1,0 +1,81 @@
+{{- if .Values.control_center.enabled }}
+apiVersion: platform.confluent.io/v1beta1
+kind: ControlCenter
+metadata:
+  name: {{ .Values.kafkaClusterName }}-control-center
+spec:
+  {{- if .Values.control_center.enterpriseEdition }}
+  kafka:
+    spec:
+      license:
+        secretRef: .Values.control_center.license.secretRef
+  {{- end }}
+  {{- if .Values.control_center.tls.enabled }}
+  tls:
+    secretRef: controlcenter-tls
+  {{- end }}
+  replicas: {{ .Values.control_center.replicas }} 
+  dependencies:
+    kafka:
+      bootstrapEndpoint: {{ .Values.kafkaClusterName }}:9092
+    schemaRegistry:
+      {{- if .Values.schema_registry.tls.enabled }}
+      url: https://{{ .Values.kafkaClusterName }}-schemaregistry-internal:8081
+      tls:
+        enabled: true
+      {{- else}}
+      url: http://{{ .Values.kafkaClusterName }}-schemaregistry-internal:8081
+      tls:
+        enabled: false
+      #authentication:
+      #  type: mtls
+      {{- end}}
+    ksqldb:
+    - name: kafka-ksqldb
+    {{- if .Values.ksql_db.tls.enabled }}
+      url: https://{{ .Values.kafkaClusterName }}-ksqldb-0-internal:8088
+      tls:
+        enabled: true
+    {{- else }}
+      url: http://{{ .Values.kafkaClusterName }}-ksqldb-0-internal:8088
+      tls:
+        enabled: false
+      #authentication:
+      #  type: mtls
+    {{- end }}
+    connect:
+    - name: kafka-connect
+    {{- if .Values.kafka_connect.tls.enabled }}
+      url: https://{{ .Values.kafkaClusterName }}-connect:8083
+      tls:
+        enabled: true
+    {{- else }}
+      url: http://{{ .Values.kafkaClusterName }}-connect:8083
+      tls:
+        enabled: false
+      #authentication:
+      #  type: mtls
+    {{- end}}
+  telemetry:
+      global: false
+  {{- if .Values.image.private_repository }}
+  image:
+    application: {{ .Values.image.connect.repository }}:{{ .Values.image.connect.tag }}
+    init: {{ .Values.image.init.repository }}:{{ .Values.image.init.tag }}
+    pullSecretRef:
+      - {{ .Values.imagePullSecrets }}
+  {{ else }}
+  image:
+    application: confluentinc/cp-enterprise-control-center-operator:6.1.0.0
+    init: confluentinc/cp-init-container-operator:6.1.0.0
+  {{- end }}
+  dataVolumeCapacity: {{ .Values.control_center.dataVolumeCapacity }} 
+  podTemplate:
+    resources:
+      requests:
+        cpu: {{ .Values.control_center.resources.requests.cpu }} 
+        memory: {{ .Values.control_center.resources.requests.memory }} 
+      limits:
+        cpu: {{ .Values.control_center.resources.limits.cpu }} 
+        memory: {{ .Values.control_center.resources.limits.memory }}
+{{- end }}

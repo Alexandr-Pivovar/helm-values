@@ -1,0 +1,37 @@
+{{- if .Values.schema_registry.enabled }}
+apiVersion: platform.confluent.io/v1beta1
+kind: SchemaRegistry
+metadata:
+  name: {{ .Values.kafkaClusterName }}-schemaregistry
+spec:
+  {{- if .Values.schema_registry.enterpriseEdition }}
+  kafka:
+    spec:
+      license:
+        secretRef: .Values.schema_registry.license.secretRef
+  {{- end }}
+  {{- if .Values.schema_registry.tls.enabled }}
+  tls:
+    secretRef: schemaregistry-tls
+  {{- end }}
+  replicas: {{ .Values.schema_registry.replicas }}
+  {{- if .Values.image.private_repository }}
+  image:
+    application: {{ .Values.image.schemaregistry.repository }}:{{ .Values.image.schemaregistry.tag }}
+    init: {{ .Values.image.init.repository }}:{{ .Values.image.init.tag }}
+    pullSecretRef:
+      - {{ .Values.imagePullSecrets }}
+  {{ else }}
+  image:
+    application: confluentinc/cp-schema-registry-operator:6.1.0.0
+    init: confluentinc/cp-init-container-operator:6.1.0.0
+  {{- end }}
+  podTemplate:
+    resources:
+      requests:
+        cpu: {{ .Values.schema_registry.resources.requests.cpu }}
+        memory: {{ .Values.schema_registry.resources.requests.memory }}
+      limits:
+        cpu: {{ .Values.schema_registry.resources.limits.cpu }}
+        memory: {{ .Values.schema_registry.resources.limits.memory }}
+{{- end }}

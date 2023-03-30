@@ -1,0 +1,29 @@
+apiVersion: platform.confluent.io/v1beta1
+kind: Zookeeper
+metadata:
+  name: zookeeper
+spec:
+  {{- if .Values.zookeeper.enterpriseEdition }}
+  kafka:
+    spec:
+      license:
+        secretRef: .Values.zookeeper.license.secretRef
+  {{- end }}
+  replicas: 3
+  dataVolumeCapacity: 1Gi
+  logVolumeCapacity: 1Gi
+  {{- if .Values.zookeeper.tls.enabled }}
+  tls:
+    secretRef: zookeeper-tls
+  {{- end }}
+  {{- if .Values.image.private_repository }}
+  image:
+    application: {{ .Values.image.zookeeper.repository }}:{{ .Values.image.zookeeper.tag }}
+    init: {{ .Values.image.init.repository }}:{{ .Values.image.init.tag }}
+    pullSecretRef:
+      - {{ .Values.imagePullSecrets }}
+  {{ else }}
+  image:
+    application: confluentinc/cp-zookeeper:7.2.0
+    init: confluentinc/confluent-init-container:2.4.0
+  {{- end }}

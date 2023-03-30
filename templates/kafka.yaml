@@ -1,0 +1,53 @@
+{{- if .Values.kafka.enabled }}
+apiVersion: platform.confluent.io/v1beta1
+kind: Kafka
+metadata:
+  name: {{ .Values.kafkaClusterName }}
+spec:
+  {{- if .Values.kafka.enterpriseEdition }}
+  kafka:
+    spec:
+      license:
+        secretRef: .Values.kafka.license.secretRef
+  {{- end }}
+  {{- if .Values.kafka.tls.enabled }}
+  tls:
+    secretRef: kafka-tls
+  {{- end }}
+  configOverrides:
+    server:
+      {{- range $.Values.kafka.configOverrides.server }}
+      - {{ . | quote }}
+      {{- end }}
+    jvm:
+      {{- range $.Values.kafka.configOverrides.jvm }}
+      - {{ . | quote }}
+      {{- end }}
+    log4j:
+      {{- range $.Values.kafka.configOverrides.log4j }}
+      - {{ . | quote }}
+      {{- end }}
+  replicas: {{ .Values.kafka.replicas }}
+  dataVolumeCapacity: {{ .Values.kafka.dataVolumeCapacity }}
+  podTemplate:
+    resources:
+      requests:
+        cpu: {{ .Values.kafka.resources.requests.cpu }}
+        memory: {{ .Values.kafka.resources.requests.memory }}
+      limits:
+        cpu: {{ .Values.kafka.resources.limits.cpu }}
+        memory: {{ .Values.kafka.resources.limits.memory }}
+  metricReporter:
+    enabled: true
+  {{- if .Values.image.private_repository }}
+  image:
+    application: {{ .Values.image.kafka.repository }}:{{ .Values.image.kafka.tag }}
+    init: {{ .Values.image.init.repository }}:{{ .Values.image.init.tag }}
+    pullSecretRef:
+      - {{ .Values.imagePullSecrets }}
+  {{ else }}
+  image:
+    application: confluentinc/cp-server:7.2.0
+    init: confluentinc/confluent-init-container:2.4.0
+  {{- end }}
+{{- end }}

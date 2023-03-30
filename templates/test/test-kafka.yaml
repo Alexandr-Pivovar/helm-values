@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: "{{ include "confluent-kafka.fullname" . }}-test-kafka"
+  labels:
+    {{- include "confluent-kafka.labels" . | nindent 4 }}
+  annotations:
+    "helm.sh/hook": test
+spec:
+  containers:
+    - name: test-kafka
+      image: confluentinc/cp-server:7.2.0
+      command:
+      - /bin/sh
+      - -c
+      - echo 'cluster name' {{ .Values.kafkaClusterName }}; 
+        kafka-topics --create --if-not-exists --topic test1 --bootstrap-server {{ .Values.kafkaClusterName }}-0-internal.{{ .Release.Namespace }}.svc.cluster.local.:9092 &&
+        kafka-topics --list --bootstrap-server {{ .Values.kafkaClusterName }}-0-internal.{{ .Release.Namespace }}.svc.cluster.local.:9092 &&
+        kafka-topics --delete --if-exists --topic test1 --bootstrap-server {{ .Values.kafkaClusterName }}-0-internal.{{ .Release.Namespace }}.svc.cluster.local.:9092 
+  restartPolicy: Never

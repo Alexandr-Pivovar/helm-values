@@ -1,0 +1,107 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: sr-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  commonName: schemaregistry
+  dnsNames:
+    - schemaregistry
+    - schemaregistry.{{ .Release.Namespace }}
+    - schemaregistry.{{ .Release.Namespace }}.svc.cluster.local
+    - '*.{{ .Release.Namespace }}.svc.cluster.local'
+    - '*.schemaregistry.{{ .Release.Namespace }}.svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: {{ .Values.kafkaClusterName }}-root-issuer
+  secretName: schemaregistry-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: kafka-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  commonName: kafka
+  dnsNames:
+    - kafka
+    - kafka.{{ .Release.Namespace }}
+    - kafka.{{ .Release.Namespace }}.svc.cluster.local
+    - '*.{{ .Release.Namespace }}.svc.cluster.local'
+    - '*.kafka.{{ .Release.Namespace }}.svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: {{ .Values.kafkaClusterName }}-root-issuer
+  secretName: kafka-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: c3-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  commonName: kafka
+  dnsNames:
+    - controlcenter
+    - controlcenter.{{ .Release.Namespace }}
+    - controlcenter.{{ .Release.Namespace }}.svc.cluster.local
+    - '*.{{ .Release.Namespace }}.svc.cluster.local'
+    - '*.controlcenter.{{ .Release.Namespace }}.svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: {{ .Values.kafkaClusterName }}-root-issuer
+  secretName: controlcenter-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ksqldb-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  commonName: ksqldb
+  dnsNames:
+    - ksqldb
+    - ksqldb.{{ .Release.Namespace }}
+    - ksqldb.{{ .Release.Namespace }}.svc.cluster.local
+    - '*.{{ .Release.Namespace }}.svc.cluster.local'
+    - '*.ksqldb.{{ .Release.Namespace }}.svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: {{ .Values.kafkaClusterName }}-root-issuer
+  secretName: ksqldb-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: connect-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  commonName: connect
+  dnsNames:
+    - connect
+    - connect.{{ .Release.Namespace }}
+    - connect.{{ .Release.Namespace }}.svc.cluster.local
+    - '*.{{ .Release.Namespace }}.svc.cluster.local'
+    - '*.connect.{{ .Release.Namespace }}.svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: {{ .Values.kafkaClusterName }}-root-issuer
+  secretName: connect-tls
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: zookeeper-cert
+  namespace: {{ .Release.Namespace }}
+spec:
+  commonName: zookeeper
+  dnsNames:
+    - zookeeper
+    - zookeeper.{{ .Release.Namespace }}
+    - zookeeper.{{ .Release.Namespace }}.svc.cluster.local
+    - '*.{{ .Release.Namespace }}.svc.cluster.local'
+    - '*.zookeeper.{{ .Release.Namespace }}.svc.cluster.local'
+  issuerRef:
+    kind: Issuer
+    name: {{ .Values.kafkaClusterName }}-root-issuer
+  secretName: zookeeper-tls

@@ -1,0 +1,34 @@
+{{- if .Values.kafka_connect.enabled }}
+apiVersion: platform.confluent.io/v1beta1
+kind: Connect
+metadata:
+  name: {{ .Values.kafkaClusterName }}-connect
+spec:
+  {{- if .Values.kafka_connect.tls.enabled }}
+  tls:
+    secretRef: connect-tls
+  {{- end }}
+  replicas: {{ .Values.kafka_connect.replicas }}
+  dependencies:
+    kafka:
+      bootstrapEndpoint: {{ .Values.kafkaClusterName }}:9071
+  {{- if .Values.image.private_repository }}
+  image:
+    application: {{ .Values.image.connect.repository }}:{{ .Values.image.connect.tag }}
+    init: {{ .Values.image.init.repository }}:{{ .Values.image.init.tag }}
+    pullSecretRef:
+      - {{ .Values.imagePullSecrets }}
+  {{ else }}
+  image:
+    application: confluentinc/cp-server-connect-operator:6.1.0.0
+    init: confluentinc/cp-init-container-operator:6.1.0.0
+  {{- end }}
+  podTemplate:
+    resources:
+      requests:
+        cpu: {{ .Values.kafka_connect.resources.requests.cpu }}
+        memory: {{ .Values.kafka_connect.resources.requests.memory }}
+      limits:
+        cpu: {{ .Values.kafka_connect.resources.limits.cpu }}
+        memory: {{ .Values.kafka_connect.resources.limits.memory }}
+{{- end }}

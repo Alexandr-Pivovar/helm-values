@@ -1,0 +1,31 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.kafkaClusterName }}-selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.kafkaClusterName }}-root-certificate
+spec:
+  isCA: true
+  commonName: {{ .Values.kafkaClusterName }}-root-certificate
+  secretName: {{ .Values.kafkaClusterName }}-root-certificate
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: {{ .Values.kafkaClusterName }}-selfsigned-issuer
+    kind: Issuer
+    group: cert-manager.io
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: {{ .Values.kafkaClusterName }}-root-issuer
+spec:
+  ca:
+    secretName: {{ .Values.kafkaClusterName }}-root-certificate
+---

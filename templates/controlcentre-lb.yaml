@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.kafkaClusterName }}-control-center-lb
+  annotations:
+    cloud.google.com/load-balancer-type: "Internal"
+spec:
+  selector:
+    app: {{ .Values.kafkaClusterName }}-control-center
+    #app.kubernetes.io/name: kafka-control-centre
+  ports:
+    - name: http-svc
+      protocol: TCP
+      port: 9021 
+      targetPort: 9021 
+  type: LoadBalancer
